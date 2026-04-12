@@ -161,7 +161,9 @@ require_once __DIR__ . '/includes/header.php';
         <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
             <span class="text-muted2" style="font-size:.8rem;">Try:</span>
             <?php foreach (['PHP', 'Web Design', 'Data Entry', 'Content Writing', 'Python', 'WordPress', 'SEO', 'Logo Design', 'Excel', 'JavaScript'] as $tag): ?>
-                <a href="?q=<?= urlencode($tag) ?>&type=<?= $type ?>" class="search-tag"><?= $tag ?></a>
+                <a href="?q=<?= urlencode($tag) ?>&type=<?= $type ?>" class="search-tag">
+                    <?= $tag ?>
+                </a>
             <?php endforeach; ?>
         </div>
     </div>
@@ -169,8 +171,11 @@ require_once __DIR__ . '/includes/header.php';
     <?php if ($q !== ''): ?>
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h5 class="fw-bold mb-0">
-                <?= $totalFound ?> result<?= $totalFound !== 1 ? 's' : '' ?>
-                for "<span style="color:var(--brand);"><?= htmlspecialchars($q) ?></span>"
+                <?= $totalFound ?> result
+                <?= $totalFound !== 1 ? 's' : '' ?>
+                for "<span style="color:var(--brand);">
+                    <?= htmlspecialchars($q) ?>
+                </span>"
             </h5>
             <div class="d-flex gap-2">
                 <a href="?q=<?= urlencode($q) ?>&type=jobs"
@@ -208,13 +213,17 @@ require_once __DIR__ . '/includes/header.php';
     <?php if ($q !== '' && !$results): ?>
         <div class="text-center text-muted2 py-5 card card-soft p-4">
             <div style="font-size:2.5rem;">😕</div>
-            <div class="mt-2 fw-bold">No results found for "<?= htmlspecialchars($q) ?>"</div>
+            <div class="mt-2 fw-bold">No results found for "
+                <?= htmlspecialchars($q) ?>"
+            </div>
             <div class="text-muted2 mt-2" style="font-size:.87rem;">
                 Try different keywords, shorter terms or check spelling
             </div>
             <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
                 <?php foreach (['PHP', 'Web Design', 'Data Entry', 'Writing', 'Python'] as $tag): ?>
-                    <a href="?q=<?= urlencode($tag) ?>&type=<?= $type ?>" class="search-tag"><?= $tag ?></a>
+                    <a href="?q=<?= urlencode($tag) ?>&type=<?= $type ?>" class="search-tag">
+                        <?= $tag ?>
+                    </a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -240,13 +249,17 @@ require_once __DIR__ . '/includes/header.php';
                                 <?= highlight($j['title'], $keywords) ?>
                             </div>
                             <div style="color:var(--brand);font-weight:700;white-space:nowrap;margin-left:8px;">
-                                PKR <?= number_format((float) $j['budget'], 0) ?>
+                                PKR
+                                <?= number_format((float) $j['budget'], 0) ?>
                             </div>
                         </div>
                         <div class="text-muted2 mb-2" style="font-size:.85rem;">
-                            📂 <?= highlight($j['category_name'], $keywords) ?>
-                            &bull; 👤 <?= htmlspecialchars($j['client_name']) ?>
-                            &bull; 📅 <?= htmlspecialchars($j['deadline']) ?>
+                            📂
+                            <?= highlight($j['category_name'], $keywords) ?>
+                            &bull; 👤
+                            <?= htmlspecialchars($j['client_name']) ?>
+                            &bull; 📅
+                            <?= htmlspecialchars($j['deadline']) ?>
                         </div>
                         <div class="text-muted2 mb-3" style="font-size:.88rem;line-height:1.6;flex:1;">
                             <?= highlight(
@@ -286,13 +299,18 @@ require_once __DIR__ . '/includes/header.php';
                             <?php if ($imgUrl): ?>
                                 <img src="<?= htmlspecialchars($imgUrl) ?>" class="profile-avatar" alt="">
                             <?php else: ?>
-                                <div class="profile-avatar-placeholder"><?= htmlspecialchars(initials($f['name'])) ?></div>
+                                <div class="profile-avatar-placeholder">
+                                    <?= htmlspecialchars(initials($f['name'])) ?>
+                                </div>
                             <?php endif; ?>
                             <div>
-                                <div class="fw-bold"><?= highlight($f['name'], $keywords) ?></div>
+                                <div class="fw-bold">
+                                    <?= highlight($f['name'], $keywords) ?>
+                                </div>
                                 <?php if ($f['hourly_rate']): ?>
                                     <div style="color:var(--brand);font-size:.85rem;font-weight:700;">
-                                        PKR <?= number_format((float) $f['hourly_rate'], 0) ?>/hr
+                                        PKR
+                                        <?= number_format((float) $f['hourly_rate'], 0) ?>/hr
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -306,7 +324,9 @@ require_once __DIR__ . '/includes/header.php';
                                     </span>
                                 <?php endforeach; ?>
                                 <?php if (count($skills) > 6): ?>
-                                    <span class="skill-tag">+<?= count($skills) - 6 ?> more</span>
+                                    <span class="skill-tag">+
+                                        <?= count($skills) - 6 ?> more
+                                    </span>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
