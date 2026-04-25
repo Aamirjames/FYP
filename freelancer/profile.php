@@ -18,201 +18,221 @@ function initials($name)
 
 $errors = [];
 $success = "";
+$activeTab = $_GET['tab'] ?? 'profile';
 
 /* Load all skills */
 $allSkills = $pdo->query("SELECT skill_id, skill_name FROM skills ORDER BY skill_name")->fetchAll();
 
-/* Load current profile from users table */
-$stmt = $pdo->prepare("SELECT hourly_rate, portfolio_url, profile_image FROM users WHERE user_id=? LIMIT 1");
+/* Load profile */
+$stmt = $pdo->prepare("SELECT hourly_rate, portfolio_url, profile_image, phone, email FROM users WHERE user_id=? LIMIT 1");
 $stmt->execute([$freelancerId]);
-$profile = $stmt->fetch() ?: ['hourly_rate' => null, 'portfolio_url' => null, 'profile_image' => null];
+$profile = $stmt->fetch();
 
 /* Load selected skills */
 $stmt = $pdo->prepare("SELECT skill_id FROM user_skill WHERE user_id=?");
 $stmt->execute([$freelancerId]);
 $selectedSkills = array_map(fn($r) => (int) $r['skill_id'], $stmt->fetchAll());
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+/* ================= PROFILE UPDATE ================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'profile') {
   csrf_verify();
+  $activeTab = 'profile';
 
   $hourly = trim($_POST['hourly_rate'] ?? '');
   $portfolio = trim($_POST['portfolio_url'] ?? '');
+  $phone = trim($_POST['phone'] ?? '');
   $skills = $_POST['skills'] ?? [];
 
   if ($hourly !== '' && (!is_numeric($hourly) || (float) $hourly < 0)) {
-    $errors[] = "Hourly rate must be a valid number (0 or greater).";
+    $errors[] = "Hourly rate must be valid.";
   }
-  if (!is_array($skills))
-    $skills = [];
 
-  // uplodad profile pic 
+  if (empty($skills)) {
+    $errors[] = "Select at least one skill.";
+  }
 
+  /* Image Upload */
   $newImagePath = null;
-
   if (!empty($_FILES['profile_image']) && ($_FILES['profile_image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
 
-    if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-      $errors[] = "Image upload failed.";
-    } else {
-      $maxBytes = 2 * 1024 * 1024; // 2MB
-      if (($_FILES['profile_image']['size'] ?? 0) > $maxBytes) {
-        $errors[] = "Image must be less than 2MB.";
-      } else {
-        $tmp = $_FILES['profile_image']['tmp_name'];
-        $info = @getimagesize($tmp);
+    if ($_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+      if ($_FILES['profile_image']['size'] <= 2 * 1024 * 1024) {
 
-        if ($info === false) {
-          $errors[] = "Uploaded file is not a valid image.";
+        $info = @getimagesize($_FILES['profile_image']['tmp_name']);
+        $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+
+        if ($info && isset($allowed[$info['mime']])) {
+
+          $dir = __DIR__ . '/../uploads/profiles/';
+          if (!is_dir($dir))
+            mkdir($dir, 0777, true);
+
+          $filename = 'user_' . $freelancerId . '_' . time() . '.' . $allowed[$info['mime']];
+          move_uploaded_file($_FILES['profile_image']['tmp_name'], $dir . $filename);
+
+          $newImagePath = 'uploads/profiles/' . $filename;
         } else {
-          $allowed = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-          ];
-
-          $mime = $info['mime'] ?? '';
-          if (!isset($allowed[$mime])) {
-            $errors[] = "Only JPG, PNG, WEBP images are allowed.";
-          } else {
-            $ext = $allowed[$mime];
-
-            $uploadDir = __DIR__ . '/../uploads/profiles/';
-            if (!is_dir($uploadDir)) {
-              mkdir($uploadDir, 0777, true);
-            }
-
-            $filename = 'user_' . $freelancerId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-            $destFs = $uploadDir . $filename;
-
-            if (!move_uploaded_file($tmp, $destFs)) {
-              $errors[] = "Could not save uploaded image.";
-            } else {
-              // Path stor in database
-              $newImagePath = 'uploads/profiles/' . $filename;
-            }
-          }
+          $errors[] = "Invalid image type.";
         }
-      }
-    }
+
+      } else
+        $errors[] = "Image too large.";
+    } else
+      $errors[] = "Upload failed.";
   }
-  // -----------------------------------------------
 
   if (!$errors) {
     $pdo->beginTransaction();
     try {
 
-      // Update portfolio
-      if ($newImagePath !== null) {
-        $stmt = $pdo->prepare("UPDATE users SET hourly_rate=?, portfolio_url=?, profile_image=? WHERE user_id=?");
-        $stmt->execute([
-          $hourly === '' ? null : (float) $hourly,
-          $portfolio === '' ? null : $portfolio,
-          $newImagePath,
-          $freelancerId
-        ]);
+      if ($newImagePath) {
+        $pdo->prepare("UPDATE users SET hourly_rate=?, portfolio_url=?, phone=?, profile_image=? WHERE user_id=?")
+          ->execute([$hourly ?: null, $portfolio ?: null, $phone ?: null, $newImagePath, $freelancerId]);
       } else {
-        $stmt = $pdo->prepare("UPDATE users SET hourly_rate=?, portfolio_url=? WHERE user_id=?");
-        $stmt->execute([
-          $hourly === '' ? null : (float) $hourly,
-          $portfolio === '' ? null : $portfolio,
-          $freelancerId
-        ]);
+        $pdo->prepare("UPDATE users SET hourly_rate=?, portfolio_url=?, phone=? WHERE user_id=?")
+          ->execute([$hourly ?: null, $portfolio ?: null, $phone ?: null, $freelancerId]);
       }
 
-      // Replace skills
-      $stmt = $pdo->prepare("DELETE FROM user_skill WHERE user_id=?");
-      $stmt->execute([$freelancerId]);
+      /* Skills */
+      $pdo->prepare("DELETE FROM user_skill WHERE user_id=?")->execute([$freelancerId]);
 
-      if (count($skills) > 0) {
-        $ins = $pdo->prepare("INSERT INTO user_skill(user_id, skill_id) VALUES (?, ?)");
-        foreach ($skills as $sid) {
-          $sid = (int) $sid;
-          if ($sid > 0)
-            $ins->execute([$freelancerId, $sid]);
-        }
+      $ins = $pdo->prepare("INSERT INTO user_skill(user_id, skill_id) VALUES (?, ?)");
+      foreach ($skills as $sid) {
+        $ins->execute([$freelancerId, (int) $sid]);
       }
 
       $pdo->commit();
       $success = "Profile updated successfully.";
 
-      // Reload display data
-      $stmt = $pdo->prepare("SELECT hourly_rate, portfolio_url, profile_image FROM users WHERE user_id=? LIMIT 1");
-      $stmt->execute([$freelancerId]);
-      $profile = $stmt->fetch();
-
-      $stmt = $pdo->prepare("SELECT skill_id FROM user_skill WHERE user_id=?");
-      $stmt->execute([$freelancerId]);
-      $selectedSkills = array_map(fn($r) => (int) $r['skill_id'], $stmt->fetchAll());
-
     } catch (Exception $e) {
       $pdo->rollBack();
-      $errors[] = "Failed to update profile. Try again.";
+      $errors[] = "Update failed.";
     }
+  }
+}
+
+/* ================= CHANGE EMAIL ================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'email') {
+  csrf_verify();
+  $activeTab = 'email';
+
+  $newEmail = trim($_POST['new_email'] ?? '');
+  $password = $_POST['confirm_password'] ?? '';
+
+  if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = "Invalid email.";
+  }
+
+  if (!$errors) {
+    $row = $pdo->prepare("SELECT password FROM users WHERE user_id=?");
+    $row->execute([$freelancerId]);
+
+    if (!password_verify($password, $row->fetchColumn())) {
+      $errors[] = "Wrong password.";
+    }
+  }
+
+  if (!$errors) {
+    $pdo->prepare("UPDATE users SET email=? WHERE user_id=?")
+      ->execute([$newEmail, $freelancerId]);
+
+    $_SESSION['user']['email'] = $newEmail;
+    $success = "Email updated.";
+  }
+}
+
+/* ================= CHANGE PASSWORD ================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'password') {
+  csrf_verify();
+  $activeTab = 'password';
+
+  $current = $_POST['current_password'] ?? '';
+  $new = $_POST['new_password'] ?? '';
+  $confirm = $_POST['confirm_password'] ?? '';
+
+  $row = $pdo->prepare("SELECT password FROM users WHERE user_id=?");
+  $row->execute([$freelancerId]);
+
+  if (!password_verify($current, $row->fetchColumn())) {
+    $errors[] = "Wrong current password.";
+  }
+
+  if (strlen($new) < 6) {
+    $errors[] = "Password too short.";
+  }
+
+  if ($new !== $confirm) {
+    $errors[] = "Passwords do not match.";
+  }
+
+  if (!$errors) {
+    $pdo->prepare("UPDATE users SET password=? WHERE user_id=?")
+      ->execute([password_hash($new, PASSWORD_DEFAULT), $freelancerId]);
+
+    $success = "Password updated.";
   }
 }
 
 $title = "Freelancer Profile";
 require_once __DIR__ . '/../includes/header.php';
 
-$imgPath = $profile['profile_image'] ?? null;
-$imgUrl = $imgPath ? (BASE_URL . '/' . $imgPath) : null;
+$imgUrl = !empty($profile['profile_image']) ? BASE_URL . '/' . $profile['profile_image'] : null;
 ?>
 
 <div class="container py-5 page-narrow">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">My Profile</h3>
-  </div>
+
+  <h3 class="mb-4">My Profile</h3>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link <?= $activeTab === 'profile' ? 'active' : '' ?>" href="?tab=profile">Profile</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <?= $activeTab === 'email' ? 'active' : '' ?>" href="?tab=email">Email</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <?= $activeTab === 'password' ? 'active' : '' ?>" href="?tab=password">Password</a>
+    </li>
+  </ul>
 
   <?php if ($errors): ?>
     <div class="alert alert-danger">
-      <ul class="mb-0">
-        <?php foreach ($errors as $e)
-          echo "<li>" . htmlspecialchars($e) . "</li>"; ?>
-      </ul>
+      <?php foreach ($errors as $e)
+        echo "<div>" . htmlspecialchars($e) . "</div>"; ?>
     </div>
   <?php endif; ?>
 
   <?php if ($success): ?>
     <div class="alert alert-success">
-      <?= htmlspecialchars($success) ?>
+      <?= $success ?>
     </div>
   <?php endif; ?>
 
-  <form method="post" enctype="multipart/form-data" class="card card-soft p-4">
-    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+  <?php if ($activeTab === 'profile'): ?>
+    <form method="post" enctype="multipart/form-data" class="card p-4">
+      <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+      <input type="hidden" name="form" value="profile">
 
-    <div class="mb-3">
-      <label class="form-label">Profile Picture</label>
-
-      <div class="d-flex align-items-center gap-3 mb-2">
+      <div class="mb-3">
+        <label>Profile Image</label><br>
         <?php if ($imgUrl): ?>
-          <img src="<?= htmlspecialchars($imgUrl) ?>" class="profile-avatar" alt="Profile">
+          <img src="<?= $imgUrl ?>" class="profile-avatar">
         <?php else: ?>
           <div class="profile-avatar-placeholder">
-            <?= htmlspecialchars(initials($freelancerName)) ?>
+            <?= initials($freelancerName) ?>
           </div>
         <?php endif; ?>
-
-        <div class="text-muted2">Allowed: JPG, PNG, WEBP (max 2MB)</div>
+        <input type="file" name="profile_image" class="form-control mt-2">
       </div>
 
-      <input class="form-control" type="file" name="profile_image" accept=".jpg,.jpeg,.png,.webp,image/*">
-    </div>
+      <input class="form-control mb-3" type="number" name="hourly_rate" placeholder="Hourly Rate"
+        value="<?= $profile['hourly_rate'] ?>">
+      <input class="form-control mb-3" type="text" name="phone" placeholder="Phone" value="<?= $profile['phone'] ?>">
+      <input class="form-control mb-3" type="url" name="portfolio_url" placeholder="Portfolio"
+        value="<?= $profile['portfolio_url'] ?>">
 
-    <div class="mb-3">
-      <label class="form-label">Hourly Rate</label>
-      <input class="form-control" type="number" min="0" step="0.01" name="hourly_rate"
-        value="<?= htmlspecialchars($profile['hourly_rate'] ?? '') ?>">
-    </div>
+      <label class="form-label fw-bold">Skills</label>
 
-    <div class="mb-3">
-      <label class="form-label">Portfolio URL</label>
-      <input class="form-control" type="url" name="portfolio_url"
-        value="<?= htmlspecialchars($profile['portfolio_url'] ?? '') ?>">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Skills</label>
       <div class="row">
         <?php foreach ($allSkills as $s): ?>
           <?php $sid = (int) $s['skill_id']; ?>
@@ -227,10 +247,65 @@ $imgUrl = $imgPath ? (BASE_URL . '/' . $imgPath) : null;
           </div>
         <?php endforeach; ?>
       </div>
-    </div>
 
-    <button class="btn btn-brand w-100 py-2">Save Profile</button>
-  </form>
+      <button class="btn btn-brand w-100 mt-3">Save</button>
+    </form>
+  <?php endif; ?>
+
+  <?php if ($activeTab === 'email'): ?>
+    <form method="post" class="card card-soft p-4">
+      <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+      <input type="hidden" name="form" value="email">
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Current Email</label>
+        <input class="form-control" type="text" value="<?= htmlspecialchars($profile['email'] ?? '') ?>" disabled>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">New Email Address <span style="color:#f87171;">*</span></label>
+        <input class="form-control" type="email" name="new_email" placeholder="Enter new email address"
+          value="<?= htmlspecialchars($_POST['new_email'] ?? '') ?>" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-bold">Current Password <span style="color:#f87171;">*</span></label>
+        <input class="form-control" type="password" name="confirm_password" placeholder="Enter your password to confirm"
+          required>
+        <div class="text-muted2 mt-1" style="font-size:.82rem;">Required to verify this change.</div>
+      </div>
+
+      <button class="btn btn-brand w-100 py-2">Update Email</button>
+    </form>
+  <?php endif; ?>
+
+  <!-- ========== CHANGE PASSWORD – CLIENT STYLE ========== -->
+  <?php if ($activeTab === 'password'): ?>
+    <form method="post" class="card card-soft p-4">
+      <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+      <input type="hidden" name="form" value="password">
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Current Password <span style="color:#f87171;">*</span></label>
+        <input class="form-control" type="password" name="current_password" placeholder="Enter your current password"
+          required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">New Password <span style="color:#f87171;">*</span></label>
+        <input class="form-control" type="password" name="new_password" placeholder="Minimum 6 characters" minlength="6"
+          required>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-bold">Confirm New Password <span style="color:#f87171;">*</span></label>
+        <input class="form-control" type="password" name="confirm_password" placeholder="Re-enter new password" required>
+      </div>
+
+      <button class="btn btn-brand w-100 py-2">Change Password</button>
+    </form>
+  <?php endif; ?>
+
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

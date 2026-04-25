@@ -3,26 +3,27 @@ $title = "Skill-Share Hub — Hire Talent or Find Work";
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/includes/header.php';
 
-// Live platform stats
+// Live platform stats in real timne
 $totalFreelancers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='freelancer' AND status='active'")->fetchColumn();
 $totalClients = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='client' AND status='active'")->fetchColumn();
 $totalCompleted = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='completed'")->fetchColumn();
 $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'")->fetchColumn();
 ?>
 
-<!-- ── HERO ─────────────────────────────────────────────────── -->
+<!-- ── hero sections-->
 <section class="landing-hero">
     <div class="container">
         <div class="text-center mb-5">
-            <div class="hero-tag mb-3">🇵🇰 Pakistan's Local Freelancing Platform</div>
+            <div class="hero-tag mb-3">Pakistan's Trusted Local Freelancing Platform</div>
             <h1 class="hero-title">
-                The smarter way to<br>
+                The reliable way to
+
                 <span class="hero-highlight">hire</span> &amp;
                 <span class="hero-highlight">get hired</span>
             </h1>
             <p class="hero-sub">
-                Connect with verified local talent. Post jobs for free, receive proposals,
-                and pay only when you're satisfied.
+                Connect with verified local talent. Post jobs for free, review proposals from skilled professionals and
+                collaborate with confidence. Pay only when you are satisfied.
             </p>
         </div>
 
@@ -68,24 +69,24 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                     <div class="cta-icon">🏢</div>
                     <h3 class="cta-title">Hire Talent</h3>
                     <p class="cta-desc">
-                        Post a job for free, review proposals from skilled freelancers,
-                        and hire the perfect match for your project.
+                        Post a job for free, review proposals from skilled freelancers
+                        and hire the perfect professional for your project.
                     </p>
                     <ul class="cta-list">
-                        <li>✅ Post jobs for free</li>
-                        <li>✅ Review proposals & profiles</li>
-                        <li>✅ Pay only when satisfied</li>
-                        <li>✅ Rate & review freelancers</li>
+                        <li>✓ Post jobs for free</li>
+                        <li>✓ Review proposals & profiles</li>
+                        <li>✓ Pay only when satisfied</li>
+                        <li>✓ Rate & review freelancers</li>
                     </ul>
                     <?php if ($__loggedIn && ($__viewer['role'] ?? '') === 'client'): ?>
                         <a href="<?= BASE_URL ?>/client/dashboard.php"
                             class="btn btn-brand rounded-pill px-4 py-2 w-100 mt-3">
-                            Go to Dashboard →
+                            Go to Dashboard
                         </a>
                     <?php elseif (!$__loggedIn): ?>
                         <a href="<?= BASE_URL ?>/register.php?role=client"
                             class="btn btn-brand rounded-pill px-4 py-2 w-100 mt-3">
-                            Hire a Freelancer →
+                            Hire a Freelancer
                         </a>
                     <?php endif; ?>
                 </div>
@@ -97,24 +98,24 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                     <div class="cta-icon">💼</div>
                     <h3 class="cta-title">Find Work</h3>
                     <p class="cta-desc">
-                        Browse approved jobs, submit proposals with your best bid
-                        and grow your freelancing career locally.
+                        Browse verified jobs, submit competitive proposals with your best bid and grow your freelancing
+                        career locally.
                     </p>
                     <ul class="cta-list">
-                        <li>✅ Browse verified job listings</li>
-                        <li>✅ Set your own hourly rate</li>
-                        <li>✅ Build your portfolio</li>
-                        <li>✅ Get rated & earn reviews</li>
+                        <li>✓ Browse verified job listings</li>
+                        <li>✓ Set your own hourly rate</li>
+                        <li>✓ Build your portfolio</li>
+                        <li>✓ Get rated & earn reviews</li>
                     </ul>
                     <?php if ($__loggedIn && ($__viewer['role'] ?? '') === 'freelancer'): ?>
                         <a href="<?= BASE_URL ?>/freelancer/dashboard.php"
                             class="btn btn-outline-primary rounded-pill px-4 py-2 w-100 mt-3">
-                            Go to Dashboard →
+                            Go to Dashboard
                         </a>
                     <?php elseif (!$__loggedIn): ?>
                         <a href="<?= BASE_URL ?>/register.php?role=freelancer"
                             class="btn btn-outline-primary rounded-pill px-4 py-2 w-100 mt-3">
-                            Start Freelancing →
+                            Start Freelancing
                         </a>
                     <?php endif; ?>
                 </div>
@@ -126,14 +127,13 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
         <?php if (!$__loggedIn): ?>
             <div class="text-center mb-3">
                 <span class="text-muted2" style="font-size:.9rem;">Already have an account? </span>
-                <a href="<?= BASE_URL ?>/login.php" style="color:var(--brand); font-weight:600; font-size:.9rem;">Log
-                    in →</a>
+                <a href="<?= BASE_URL ?>/login.php" style="color:var(--brand); font-weight:600; font-size:.9rem;">Log in</a>
             </div>
         <?php endif; ?>
     </div>
 </section>
 
-<!-- ── LIVE STATS ─────────────────────────────────────────────── -->
+<!-- live stats-->
 <section class="stats-section py-5">
     <div class="container">
         <div class="row g-4 text-center">
@@ -164,7 +164,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
     </div>
 </section>
 
-<!-- ── CATEGORIES ─────────────────────────────────────────────── -->
+<!--  CATEGORIES -->
 <section class="py-5">
     <div class="container">
         <h2 class="section-title text-center mb-2">Browse by Category</h2>
@@ -181,7 +181,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                 ['📊', 'Data Entry', 'Excel, Spreadsheets, Research'],
                 ['📣', 'Digital Marketing', 'SEO, Social Media, Email Marketing'],
                 ['🎬', 'Video & Animation', 'Video Editing, Motion Graphics'],
-                ['🐍', 'Python / AI', 'Python, Machine Learning, Data Science'],
+                ['🐍', 'Python / Data Science', 'Python, Machine Learning, Data Science'],
                 ['🔒', 'Cybersecurity', 'Ethical Hacking, Network Security'],
                 ['📈', 'Business & Finance', 'Accounting, Business Writing'],
                 ['🛒', 'E-Commerce', 'Shopify, WooCommerce, Amazon'],
@@ -206,7 +206,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
     </div>
 </section>
 
-<!-- ── HOW IT WORKS ───────────────────────────────────────────── -->
+<!-- how the platform works -->
 <section class="how-section py-5">
     <div class="container">
         <h2 class="section-title text-center mb-2">How It Works</h2>
@@ -223,7 +223,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                             <div class="how-step-num">1</div>
                             <div>
                                 <div class="how-step-title">Post a Job</div>
-                                <div class="how-step-desc">Describe your project, set a budget and deadline — it's free
+                                <div class="how-step-desc">Describe your project, set a budget and deadline. it's free
                                 </div>
                             </div>
                         </div>
@@ -231,7 +231,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                             <div class="how-step-num">2</div>
                             <div>
                                 <div class="how-step-title">Review Proposals</div>
-                                <div class="how-step-desc">Freelancers submit bids — compare profiles, skills and rates
+                                <div class="how-step-desc">Freelancers submit bids compare profiles, skills and rates
                                 </div>
                             </div>
                         </div>
@@ -252,10 +252,10 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                     </div>
                     <?php if ($__loggedIn && $__viewer['role'] === 'client'): ?>
                         <a href="<?= BASE_URL ?>/client/post_job.php" class="btn btn-brand rounded-pill px-4 mt-3">Post a
-                            Job →</a>
+                            Job</a>
                     <?php elseif (!$__loggedIn): ?>
-                        <a href="<?= BASE_URL ?>/register.php?role=client"
-                            class="btn btn-brand rounded-pill px-4 mt-3">Post a Job Free →</a>
+                        <a href="<?= BASE_URL ?>/register.php?role=client" class="btn btn-brand rounded-pill px-4 mt-3">Post
+                            a Job Free</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -298,10 +298,10 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                     </div>
                     <?php if ($__loggedIn && $__viewer['role'] === 'freelancer'): ?>
                         <a href="<?= BASE_URL ?>/freelancer/browse_jobs.php"
-                            class="btn btn-outline-primary rounded-pill px-4 mt-3">Browse Jobs →</a>
+                            class="btn btn-outline-primary rounded-pill px-4 mt-3">Browse Jobs</a>
                     <?php elseif (!$__loggedIn): ?>
                         <a href="<?= BASE_URL ?>/register.php?role=freelancer"
-                            class="btn btn-outline-primary rounded-pill px-4 mt-3">Start Earning →</a>
+                            class="btn btn-outline-primary rounded-pill px-4 mt-3">Start Freelancing</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -310,7 +310,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
     </div>
 </section>
 
-<!-- ── TRUST BANNER ───────────────────────────────────────────── -->
+<!--  trust paltform  -->
 <section class="trust-section py-5 mb-4">
     <div class="container text-center">
         <h2 class="section-title mb-2">Why Skill-Share Hub?</h2>
@@ -342,5 +342,3 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
         </div>
     </div>
 </section>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>

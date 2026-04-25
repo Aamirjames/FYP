@@ -12,40 +12,43 @@ require_once __DIR__ . '/includes/header.php';
     <div class="text-center mb-5">
         <h1 class="fw-bold mb-2">About <span style="color:var(--brand);">Skill-Share Hub</span></h1>
         <p class="text-muted2" style="font-size:1rem;max-width:560px;margin:0 auto;line-height:1.75;">
-            A trusted local freelancing marketplace connecting skilled professionals
-            with clients.
+            A trusted local freelancing marketplace connecting skilled professionals with clients who need their
+            expertise.
         </p>
     </div>
 
     <!-- Mission -->
     <div class="card card-soft p-4 mb-4">
-        <h4 class="fw-bold mb-3">🎯 Our Mission</h4>
+        <h4 class="fw-bold mb-3">Our Mission</h4>
         <p class="text-muted2 mb-0" style="line-height:1.8;">
-            Skill-Share Hub was built to bridge the gap between local talent and local opportunity.
-            We believe skilled professionals deserve a platform that is simple to use, safe
-            and transparent and that clients deserve access to verified, quality freelancers
-            without the complexity of large international platforms.
+            Skill-Share Hub was built to bridge the gap between local talent and local opportunity. We believe skilled
+            professionals deserve a platform that is simple to use, safe, and transparent. Clients deserve access to
+            verified, quality freelancers without the complexity of large international platforms.
         </p>
     </div>
 
-    <!-- Features -->
+    <!-- Core Features (with emojis from Code 2) -->
     <div class="card card-soft p-4 mb-4">
-        <h4 class="fw-bold mb-3">⚡ What We Offer</h4>
+        <h4 class="fw-bold mb-3"><span style="margin-right:8px;">⚡</span>What We Offer</h4>
         <div class="row g-3">
             <?php
             $features = [
-                ['🔒', 'Admin Moderated', 'Every user and job is reviewed by our admin team before going live.'],
-                ['💬', 'Built-in Messaging', 'Clients and freelancers can communicate directly within the platform.'],
-                ['⭐', 'Ratings & Reviews', 'Transparent review system so clients can make informed hiring decisions.'],
-                ['📋', 'Proposal System', 'Freelancers submit competitive bids with cover letters for each job.'],
-                ['🔔', 'Notifications', 'Real-time notifications keep both parties informed at every step.'],
-                ['📊', 'Admin Reports', 'Full platform analytics with charts and live statistics for admins.'],
+                ['Verified Users', 'Every user and job is reviewed by our admin team before going live.'],
+                ['Direct Communication', 'Clients and freelancers can communicate directly within the platform.'],
+                ['Transparent Reviews', 'Honest review system so clients can make informed hiring decisions.'],
+                ['Competitive Bidding', 'Freelancers submit competitive bids with cover letters for each job.'],
+                ['Real-time Notifications', 'Stay informed at every step of your project.'],
+                ['Admin Supervision', 'Full platform support and supervision by our admin team.'],
             ];
-            foreach ($features as [$icon, $title, $desc]): ?>
+            $featureEmojis = ['🔒', '💬', '⭐', '📋', '🔔', '📊'];
+            $i = 0;
+            foreach ($features as [$title, $desc]):
+                $emoji = $featureEmojis[$i++];
+                ?>
                 <div class="col-md-4">
                     <div class="p-3 rounded h-100" style="background:rgba(255,255,255,.03);border:1px solid var(--border);">
-                        <div style="font-size:1.6rem;margin-bottom:8px;"><?= $icon ?></div>
-                        <div class="fw-bold mb-1" style="font-size:.95rem;"><?= $title ?></div>
+                        <div style="font-size:1.6rem;margin-bottom:8px;"><?= $emoji ?></div>
+                        <div class="fw-bold mb-2" style="font-size:.95rem;"><?= $title ?></div>
                         <div class="text-muted2" style="font-size:.82rem;line-height:1.5;"><?= $desc ?></div>
                     </div>
                 </div>
@@ -53,9 +56,34 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Team -->
+    <!-- Why Choose Us (unchanged, no emojis from Code 2) -->
     <div class="card card-soft p-4 mb-4">
-        <h4 class="fw-bold mb-4">👨‍💻 Founders</h4>
+        <h4 class="fw-bold mb-3">Why Choose Skill-Share Hub?</h4>
+        <div class="row g-3">
+            <?php
+            $reasons = [
+                ['Local Community', 'Support local talent and build meaningful professional relationships.'],
+                ['Simple & Transparent', 'No hidden fees, straightforward pricing and clear terms.'],
+                ['Secure Platform', 'Bank-level security with verified user profiles and safe payments.'],
+                ['Professional Support', 'Our team is here to help resolve disputes and support your success.'],
+            ];
+            foreach ($reasons as [$title, $desc]): ?>
+                <div class="col-md-6">
+                    <div style="display: flex; gap: 12px;">
+                        <div style="font-size:1.2rem;flex-shrink:0;color:var(--brand);">✓</div>
+                        <div>
+                            <div class="fw-bold" style="font-size:.95rem;margin-bottom:4px;"><?= $title ?></div>
+                            <div class="text-muted2" style="font-size:.82rem;line-height:1.5;"><?= $desc ?></div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Team (no emoji before heading) -->
+    <div class="card card-soft p-4 mb-4">
+        <h4 class="fw-bold mb-4">Founders</h4>
         <div class="row g-4">
             <?php
             $team = [
@@ -81,12 +109,12 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div class="mt-4 pt-3" style="border-top:1px solid var(--border);">
             <div class="row g-2 text-muted2" style="font-size:.85rem;">
-                <div class="col-md-4">👩‍🏫 Special credits:- Komal Saleem</div>
+                <div class="col-md-4">Special thanks to: Komal Saleem</div>
             </div>
         </div>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA (with arrow emojis from Code 2) -->
     <div class="text-center mt-4">
         <?php
         $__aUser = $_SESSION['user'] ?? null;

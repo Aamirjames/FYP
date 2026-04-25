@@ -1,29 +1,36 @@
 <?php
-// includes/mailer.php
-// Requires PHPMailer — install via: composer require phpmailer/phpmailer
-// OR download from: https://github.com/PHPMailer/PHPMailer/releases
-// and place PHPMailer folder inside /includes/
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/../config/mail.php';
+// Load PHPMailer files
+require_once __DIR__ . '/../vendor/phpmailer/src/Exception.php';
+require_once __DIR__ . '/../vendor/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../vendor/phpmailer/src/SMTP.php';
 
-// Try to load PHPMailer — either via Composer or manual download
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    require_once __DIR__ . '/../vendor/autoload.php';
-} elseif (file_exists(__DIR__ . '/PHPMailer/src/PHPMailer.php')) {
-    require_once __DIR__ . '/PHPMailer/src/Exception.php';
-    require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
-    require_once __DIR__ . '/PHPMailer/src/SMTP.php';
-} else {
-    throw new RuntimeException("PHPMailer not found. See includes/mailer.php for setup instructions.");
-}
+// =========================
+// CONFIGURATION
+// =========================
+define('MAIL_HOST', 'smtp.gmail.com');
+define('MAIL_USERNAME', 'aamirjames006@gmail.com'); // mail email ...
+define('MAIL_PASSWORD', 'gzhe zfdr cilc eqth');    // my app pass word of google
+define('MAIL_PORT', 587);
+define('MAIL_FROM_EMAIL', 'aamirjames006@gmail.com');
+define('MAIL_FROM_NAME', 'Skill-Share Hub');
 
-function sendMail(string $toEmail, string $toName, string $subject, string $htmlBody): bool
+// =========================
+// FUNCTION
+// =========================
+function sendMail($toEmail, $toName, $subject, $body)
 {
     $mail = new PHPMailer(true);
+
     try {
+        // DEBUG (IMPORTANT for testing)
+        $mail->SMTPDebug = 0; // change to 2 if error
+        $mail->Debugoutput = 'html';
+
+        // SMTP SETTINGS
         $mail->isSMTP();
         $mail->Host = MAIL_HOST;
         $mail->SMTPAuth = true;
@@ -32,18 +39,31 @@ function sendMail(string $toEmail, string $toName, string $subject, string $html
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = MAIL_PORT;
 
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+        // SSL FIX (IMPORTANT for XAMPP)
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
+
+        // EMAIL SETTINGS
+        $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
         $mail->addAddress($toEmail, $toName);
 
         $mail->isHTML(true);
         $mail->Subject = $subject;
-        $mail->Body = $htmlBody;
-        $mail->AltBody = strip_tags($htmlBody);
+        $mail->Body = $body;
 
-        $mail->send();
-        return true;
+        // OPTIONAL (plain text fallback)
+        $mail->AltBody = strip_tags($body);
+
+        return $mail->send();
+
     } catch (Exception $e) {
-        error_log("Mailer error: " . $mail->ErrorInfo);
+        // Show error while testing
+        echo "Mailer Error: " . $mail->ErrorInfo;
         return false;
     }
 }

@@ -1,5 +1,3 @@
-/* SkillShare Hub - Main Stylesheet */
-
 :root {
     color-scheme: dark;
 
@@ -50,6 +48,7 @@ body {
     background: var(--brand);
     color: #001018;
     border: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-brand:hover {
@@ -438,7 +437,6 @@ select option:hover {
     color: #ffffff !important;
 }
 
-
 select.form-select option:checked {
     background-color: #0891b2 !important;
     color: #ffffff !important;
@@ -472,8 +470,6 @@ select.form-select option:checked {
     font-size: .7rem;
     vertical-align: middle;
 }
-
-
 
 /* --Messaging sys b/w client and freelancer after job is determined */
 .chat-wrapper {
@@ -602,7 +598,6 @@ select.form-select option:checked {
     background: rgba(34, 211, 238, .15);
 }
 
-
 /* rating sys in 1 to 5 stars */
 .star-rating {
     display: flex;
@@ -623,7 +618,6 @@ select.form-select option:checked {
     color: #fbbf24;
     transform: scale(1.15);
 }
-
 
 /* notification bell icon and  drop down menu there*/
 .notif-badge {
@@ -713,7 +707,7 @@ select.form-select option:checked {
     font-weight: 600;
 }
 
-/* ── Footer (Refined) ───────────────────────────────────────── */
+/* ── Footer ─ */
 .site-footer {
     border-top: 1px solid var(--border);
 }
@@ -785,7 +779,7 @@ select.form-select option:checked {
     color: var(--brand);
 }
 
-/* ── Landing Page ───────────────────────────────────────────── */
+/* =-- Landing Page-- */
 .landing-hero {
     padding: 80px 0 60px;
     background: radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, .07) 0%, transparent 70%);
@@ -1032,7 +1026,7 @@ select.form-select option:checked {
     line-height: 1.55;
 }
 
-/* ── Hero Search Bar ────────────────────────────────────────── */
+/*  Hero sec search bar */
 .hero-search {
     max-width: 720px;
     margin: 0 auto;
@@ -1119,7 +1113,7 @@ select.form-select option:checked {
     background: rgba(34, 211, 238, .07);
 }
 
-/* ── Pagination ─────────────────────────────────────────────── */
+/* Pagination */
 .pagination-custom {
     display: flex;
     gap: 6px;
@@ -1159,7 +1153,7 @@ select.form-select option:checked {
     color: #000;
 }
 
-/* ── Floating Notification Bell (outside navbar) ────────────── */
+/* Floating Notification Bell icon */
 .notif-float-wrap {
     position: fixed;
     bottom: 28px;
@@ -1209,4 +1203,15 @@ select.form-select option:checked {
     top: auto !important;
     right: 0 !important;
     left: auto !important;
+}
+
+
+/* disabled inputs were not visible now visible with this */
+.form-control:disabled,
+.form-control[readonly] {
+    background: rgba(255, 255, 255, .06) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
 }

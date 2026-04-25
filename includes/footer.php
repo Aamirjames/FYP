@@ -19,8 +19,8 @@ $__fDash = $__fLoggedIn ? (
                     <div class="footer-brand mb-2">Skill-Share Hub</div>
                     <p class="text-muted2 mb-3" style="font-size:.88rem;line-height:1.7;">
                         A local freelancing marketplace connecting skilled professionals
-                        with clients. Post jobs, hire talent and grow your career —
-                        all in one trusted platform.
+                        with clients. Post jobs, hire talent and grow your career.
+                        All in one trusted platform.
                     </p>
                     <div class="d-flex gap-2 flex-wrap">
                         <span class="footer-badge">🔒 Secure Payments</span>
@@ -31,7 +31,7 @@ $__fDash = $__fLoggedIn ? (
 
                 <!-- ── Role-Based Navigation ── -->
                 <?php if (!$__fLoggedIn): ?>
-                    <!-- GUEST: 3 columns -->
+                    <!-- if as  GUEST 3 columns -->
                     <div class="col-lg-2 col-md-4 col-6">
                         <div class="footer-heading">For Clients</div>
                         <ul class="footer-links">
@@ -60,7 +60,7 @@ $__fDash = $__fLoggedIn ? (
                     </div>
 
                 <?php elseif ($__fRole === 'client'): ?>
-                    <!-- CLIENT: 2 columns -->
+                    <!-- if as a CLIENT 2 columns -->
                     <div class="col-lg-3 col-md-6 col-6">
                         <div class="footer-heading">My Account</div>
                         <ul class="footer-links">
@@ -81,7 +81,7 @@ $__fDash = $__fLoggedIn ? (
                     </div>
 
                 <?php elseif ($__fRole === 'freelancer'): ?>
-                    <!-- FREELANCER: 2 columns -->
+                    <!--if as a FREELANCER 2 columns -->
                     <div class="col-lg-3 col-md-6 col-6">
                         <div class="footer-heading">My Account</div>
                         <ul class="footer-links">
@@ -102,7 +102,7 @@ $__fDash = $__fLoggedIn ? (
                     </div>
 
                 <?php elseif ($__fRole === 'admin'): ?>
-                    <!-- ADMIN: 2 columns -->
+                    <!--if as  ADMIN 2 columns -->
                     <div class="col-lg-3 col-md-6 col-6">
                         <div class="footer-heading">Admin Panel</div>
                         <ul class="footer-links">
@@ -165,3 +165,5 @@ $__fDash = $__fLoggedIn ? (
 </body>
 
 </html>
+
+<!-- I wanted to  -->
