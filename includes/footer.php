@@ -159,9 +159,6 @@ $__fDash = $__fLoggedIn ? (
     </div>
 
 </footer>
-
-
-<script src="<?= BASE_URL ?>/js/app.js"></script>
 </body>
 
 </html>
