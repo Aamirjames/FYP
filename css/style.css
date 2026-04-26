@@ -29,6 +29,9 @@
 }
 
 body {
+    max-width: 1920px;
+    margin-left: auto;
+    margin-right: auto;
     color: var(--text);
     background:
         radial-gradient(900px 450px at 70% 20%, rgba(34, 211, 238, .16), transparent 60%),
