@@ -77,7 +77,7 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
                     <div class="cta-icon">🏢</div>
                     <h3 class="cta-title">Hire Talent</h3>
                     <p class="cta-desc">
-                        Post a job for free, review proposals from skilled freelancers
+                        Post a job for free, review proposals from freelancers
                         and hire the perfect professional for your project.
                     </p>
                     <ul class="cta-list">
@@ -350,3 +350,5 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
         </div>
     </div>
 </section>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
