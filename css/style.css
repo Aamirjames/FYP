@@ -1028,7 +1028,8 @@ select.form-select option:checked {
 
 /*  Hero sec search bar */
 .hero-search {
-    max-width: 720px;
+    max-width: none;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -1206,7 +1207,7 @@ select.form-select option:checked {
 }
 
 
-/* disabled inputs were not visible now visible with this */
+/* disabled inputs were not visible now visible cleareluiy */
 .form-control:disabled,
 .form-control[readonly] {
     background: rgba(255, 255, 255, .06) !important;

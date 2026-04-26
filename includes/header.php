@@ -64,6 +64,7 @@ $isRegister = ($currentPage === 'register.php');
     </title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="<?= BASE_URL ?>/css/style.css" rel="stylesheet">
 </head>
 
@@ -74,7 +75,8 @@ $isRegister = ($currentPage === 'register.php');
         <div class="container">
             <a class="navbar-brand brand" href="<?= $brandLink ?>">Skill-Share Hub</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
+                aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 

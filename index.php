@@ -29,32 +29,40 @@ $totalJobs = (int) $pdo->query("SELECT COUNT(*) FROM job WHERE status='approved'
 
         <!-- Search Bar -->
         <div class="hero-search mb-5">
-            <form action="<?= BASE_URL ?>/search.php" method="get" class="d-flex gap-2 align-items-center">
-                <div class="hero-search-wrap flex-grow-1">
-                    <span class="hero-search-icon">🔍</span>
-                    <input type="text" name="q" class="hero-search-input"
-                        placeholder="Search for jobs, skills or freelancers..."
-                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+            <div class="card card-soft p-4">
+                <form method="get" action="<?= BASE_URL ?>/search.php" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Search</label>
+                        <input type="text" name="q" class="form-control form-control-lg"
+                            placeholder="e.g. PHP developer, logo design, data entry..."
+                            value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Search In</label>
+                        <select name="type" class="form-select form-select-lg">
+                            <option value="jobs">Find Jobs</option>
+                            <option value="freelancers">Find Freelancers</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-brand w-100 py-2">🔍 Search</button>
+                    </div>
+                </form>
+
+                <!-- Popular tags (keep as is, but inside the card) -->
+                <div class="hero-search-tags mt-3">
+                    <span class="text-muted2" style="font-size:.8rem;">Popular:</span>
+                    <?php
+                    $popular = ['PHP', 'Web Design', 'Data Entry', 'Content Writing', 'Python', 'WordPress', 'SEO'];
+                    foreach ($popular as $tag): ?>
+                        <a href="<?= BASE_URL ?>/search.php?q=<?= urlencode($tag) ?>&type=jobs" class="search-tag">
+                            <?= $tag ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
-                <div class="hero-search-type">
-                    <select name="type" class="form-select" style="border-radius:999px;min-width:140px;">
-                        <option value="jobs">Find Jobs</option>
-                        <option value="freelancers">Find Freelancers</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-brand rounded-pill px-4 py-2">Search</button>
-            </form>
-            <div class="hero-search-tags mt-2">
-                <span class="text-muted2" style="font-size:.8rem;">Popular:</span>
-                <?php
-                $popular = ['PHP', 'Web Design', 'Data Entry', 'Content Writing', 'Python', 'WordPress', 'SEO'];
-                foreach ($popular as $tag): ?>
-                    <a href="<?= BASE_URL ?>/search.php?q=<?= urlencode($tag) ?>&type=jobs" class="search-tag">
-                        <?= $tag ?>
-                    </a>
-                <?php endforeach; ?>
             </div>
         </div>
+
 
         <!-- Two CTA Paths -->
         <?php
