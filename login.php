@@ -81,8 +81,15 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="mb-3">
             <label class="form-label">Password</label>
-            <input class="form-control" name="password" placeholder="Please enter your password" type="password"
-                required>
+            <div class="position-relative">
+                <input class="form-control pe-5" name="password" placeholder="Please enter your password"
+                    type="password" required id="password-input">
+                <button type="button" id="toggle-password"
+                    onclick="const i=document.getElementById('password-input');const icon=this.querySelector('i');i.type=i.type==='password'?'text':'password';icon.classList.toggle('bi-eye');icon.classList.toggle('bi-eye-slash');"
+                    style="position:absolute;top:50%;right:10px;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#6c757d;">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
         </div>
 
         <button class="btn btn-brand w-100 py-2">Login</button>

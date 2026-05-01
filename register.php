@@ -135,7 +135,8 @@ require_once __DIR__ . '/includes/header.php';
             🎉
             <?= htmlspecialchars($success) ?>
             <div class="mt-2">
-                <a href="<?= BASE_URL ?>/login.php" class="btn btn-brand rounded-pill px-4 btn-sm">
+                <a href="<?= BASE_URL ?>/login.php" class="btn rounded-pill px-4 btn-sm"
+                    style="background:var(--brand);color:#000;font-weight:600;">
                     Go to Login →
                 </a>
             </div>
@@ -186,14 +187,28 @@ require_once __DIR__ . '/includes/header.php';
 
             <div class="mb-3">
                 <label class="form-label fw-bold">Password</label>
-                <input class="form-control" name="password" id="password" placeholder="Minimum 6 characters" type="password"
-                    minlength="6" required>
+                <div class="position-relative">
+                    <input class="form-control pe-5" name="password" id="password" placeholder="Minimum 6 characters"
+                        type="password" minlength="6" required>
+                    <button type="button"
+                        onclick="const i=document.getElementById('password');const icon=this.querySelector('i');i.type=i.type==='password'?'text':'password';icon.classList.toggle('bi-eye');icon.classList.toggle('bi-eye-slash');"
+                        style="position:absolute;top:50%;right:10px;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#6c757d;">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="mb-4">
                 <label class="form-label fw-bold">Confirm Password</label>
-                <input class="form-control" name="confirm_password" id="confirm_password"
-                    placeholder="Re-enter your password" type="password" required>
+                <div class="position-relative">
+                    <input class="form-control pe-5" name="confirm_password" id="confirm_password"
+                        placeholder="Re-enter your password" type="password" required>
+                    <button type="button"
+                        onclick="const i=document.getElementById('confirm_password');const icon=this.querySelector('i');i.type=i.type==='password'?'text':'password';icon.classList.toggle('bi-eye');icon.classList.toggle('bi-eye-slash');"
+                        style="position:absolute;top:50%;right:10px;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#6c757d;">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="mb-3" style="font-size:.82rem;" class="text-muted2">
