@@ -6,6 +6,28 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Update last_active for logged-in freelancers.
+// We write an explicit UTC timestamp (matching the DB's SET time_zone='+00:00')
+// instead of relying on MySQL NOW(), which can differ if the DB session timezone
+// is ever changed. We also throttle writes to once per minute using the session
+// so we're not hitting the DB on every single page load.
+if (isset($_SESSION['user']['id']) && isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'freelancer') {
+    $now = time();
+    $lastWrite = $_SESSION['_last_active_write'] ?? 0;
+    if ($now - $lastWrite >= 60) { // write at most once per minute
+        require_once __DIR__ . '/../config/db.php';
+        try {
+            // Use a UTC datetime string so the value always matches the DB timezone
+            $utcNow = gmdate('Y-m-d H:i:s');
+            $updateStmt = $pdo->prepare("UPDATE users SET last_active = ? WHERE user_id = ?");
+            $updateStmt->execute([$utcNow, $_SESSION['user']['id']]);
+            $_SESSION['_last_active_write'] = $now;
+        } catch (Exception $e) {
+            // Silent fail
+        }
+    }
+}
+
 $user = $_SESSION['user'] ?? null;
 if (!is_array($user) || empty($user['id']) || empty($user['role'])) {
     $user = null;
@@ -48,7 +70,7 @@ if ($user) {
 }
 
 /* Active link handling */
-$currentPage = basename($_SERVER['PHP_SELF']);   // e.g., index.php, login.php
+$currentPage = basename($_SERVER['PHP_SELF']);
 $isHome = ($currentPage === 'index.php');
 $isLogin = ($currentPage === 'login.php');
 $isRegister = ($currentPage === 'register.php');

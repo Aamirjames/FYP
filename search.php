@@ -83,8 +83,10 @@ if ($q !== '') {
         $whereStr = implode(' OR ', $whereParts);
 
         $sql = "
-            SELECT u.user_id, u.name, u.hourly_rate, u.profile_image,
+            SELECT u.user_id, u.name, u.email, u.hourly_rate, u.portfolio_url, u.profile_image, u.last_active,
                    GROUP_CONCAT(DISTINCT s.skill_name ORDER BY s.skill_name SEPARATOR ', ') AS skills,
+                   COALESCE(r.avg_rating, 0) AS avg_rating,
+                   COALESCE(r.review_count, 0) AS review_count,
                    (
                        (u.name LIKE ?) * 10 +
                        MAX(s.skill_name LIKE ?) * 6
@@ -92,9 +94,16 @@ if ($q !== '') {
             FROM users u
             LEFT JOIN user_skill us ON us.user_id = u.user_id
             LEFT JOIN skills s      ON s.skill_id = us.skill_id
+            LEFT JOIN (
+                SELECT freelancer_id,
+                       ROUND(AVG(rating), 1) AS avg_rating,
+                       COUNT(review_id) AS review_count
+                FROM reviews
+                GROUP BY freelancer_id
+            ) r ON r.freelancer_id = u.user_id
             WHERE u.role = 'freelancer' AND u.status = 'active'
               AND ($whereStr)
-            GROUP BY u.user_id
+            GROUP BY u.user_id, u.name, u.email, u.hourly_rate, u.portfolio_url, u.profile_image, u.last_active, r.avg_rating, r.review_count
             ORDER BY relevance DESC, u.name ASC
             LIMIT 50
         ";
@@ -112,6 +121,19 @@ function initials($name)
 {
     $parts = preg_split('/\s+/', trim($name));
     return strtoupper(substr($parts[0] ?? 'U', 0, 1)) . strtoupper(substr($parts[1] ?? '', 0, 1));
+}
+
+// UTC-safe online check — DB stores last_active as UTC, so we compare both sides in UTC.
+function isOnline($lastActive)
+{
+    if (!$lastActive)
+        return false;
+    $dt = DateTime::createFromFormat('Y-m-d H:i:s', $lastActive, new DateTimeZone('UTC'));
+    if (!$dt)
+        return false;
+    $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
+    $diff = $nowUtc->getTimestamp() - $dt->getTimestamp();
+    return $diff >= 0 && $diff < 180; // online if active within last 3 minutes
 }
 
 // Highlight matching keywords in text
@@ -288,49 +310,122 @@ require_once __DIR__ . '/includes/header.php';
 
         <!-- Freelancer Results -->
     <?php else: ?>
-        <div class="row g-3">
+        <div class="row g-4">
             <?php foreach ($results as $f):
                 $imgUrl = ($f['profile_image'] ?? null) ? BASE_URL . '/' . $f['profile_image'] : null;
                 $skills = $f['skills'] ? explode(', ', $f['skills']) : [];
+                $online = isOnline($f['last_active'] ?? null);
                 ?>
                 <div class="col-md-6 col-lg-4">
                     <div class="card card-soft p-4 h-100 d-flex flex-column">
+
+                        <!-- Avatar and Name -->
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <?php if ($imgUrl): ?>
-                                <img src="<?= htmlspecialchars($imgUrl) ?>" class="profile-avatar" alt="">
+                                <img src="<?= htmlspecialchars($imgUrl) ?>" class="profile-avatar" alt="Profile">
                             <?php else: ?>
                                 <div class="profile-avatar-placeholder">
                                     <?= htmlspecialchars(initials($f['name'])) ?>
                                 </div>
                             <?php endif; ?>
                             <div>
-                                <div class="fw-bold">
-                                    <?= highlight($f['name'], $keywords) ?>
-                                </div>
-                                <?php if ($f['hourly_rate']): ?>
-                                    <div style="color:var(--brand);font-size:.85rem;font-weight:700;">
-                                        PKR
-                                        <?= number_format((float) $f['hourly_rate'], 0) ?>/hr
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <div class="fw-bold" style="font-size:1.05rem;">
+                                        <?= highlight($f['name'], $keywords) ?>
                                     </div>
-                                <?php endif; ?>
+                                    <?php if ($online): ?>
+                                        <span
+                                            style="background:#e8f0fe; color:#1a73e8; font-size:0.65rem; padding:2px 6px; border-radius:20px;">
+                                            🟢 Online
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-muted2" style="font-size:.84rem;">
+                                    <?= htmlspecialchars($f['email']) ?>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Hourly Rate -->
+                        <div class="mb-3">
+                            <?php if ($f['hourly_rate']): ?>
+                                <span style="color:var(--brand);font-weight:700;font-size:1rem;">
+                                    PKR
+                                    <?= number_format((float) $f['hourly_rate'], 0) ?>
+                                </span>
+                                <span class="text-muted2" style="font-size:.84rem;"> / hr</span>
+                            <?php else: ?>
+                                <span class="text-muted2" style="font-size:.88rem;">Hourly rate not set</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Ratings -->
+                        <div class="mb-3">
+                            <?php if ($f['avg_rating'] > 0): ?>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="text-warning" style="letter-spacing: 2px; font-size: 1rem;">
+                                        <?php
+                                        $fullStars = floor($f['avg_rating']);
+                                        $halfStar = ($f['avg_rating'] - $fullStars) >= 0.5;
+                                        for ($i = 1; $i <= 5; $i++):
+                                            if ($i <= $fullStars): echo '★';
+                                            elseif ($halfStar && $i == $fullStars + 1):
+                                                echo '½';
+                                            else:
+                                                echo '☆';
+                                            endif;
+                                        endfor;
+                                        ?>
+                                    </div>
+                                    <span class="fw-semibold" style="font-size:0.95rem;">
+                                        <?= number_format($f['avg_rating'], 1) ?>
+                                    </span>
+                                    <span class="text-muted2" style="font-size:0.75rem;">(
+                                        <?= $f['review_count'] ?> review
+                                        <?= $f['review_count'] != 1 ? 's' : '' ?>)
+                                    </span>
+                                </div>
+                            <?php else: ?>
+                                <div class="text-muted2" style="font-size:0.85rem;">⭐ No reviews yet</div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Last Active -->
+                        <?php if ($f['last_active']): ?>
+                            <div class="mb-2" style="font-size:0.75rem;">
+                                <span class="text-muted2"
+                                    title="Last seen: <?= date('M j, g:i A', strtotime($f['last_active'])) ?>">
+                                    📅 Last active:
+                                    <?= date('M j, g:i A', strtotime($f['last_active'])) ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Skills -->
                         <?php if ($skills): ?>
-                            <div class="d-flex flex-wrap gap-1 mb-3 flex-grow-1">
-                                <?php foreach (array_slice($skills, 0, 6) as $sk): ?>
-                                    <span class="skill-tag"
-                                        style="<?= preg_grep('/' . preg_quote(trim($sk), '/') . '/i', $keywords) ? 'border-color:var(--brand);color:var(--brand);background:rgba(34,211,238,.1);' : '' ?>">
+                            <div class="mb-3 d-flex flex-wrap gap-1">
+                                <?php foreach ($skills as $sk): ?>
+                                    <span
+                                        style="background:rgba(34,211,238,.10); border:1px solid rgba(34,211,238,.25); color:var(--brand); border-radius:999px; padding:.25em .7em; font-size:.78rem; font-weight:600;
+                                        <?= preg_grep('/' . preg_quote(trim($sk), '/') . '/i', $keywords) ? 'border-color:var(--brand);background:rgba(34,211,238,.2);' : '' ?>">
                                         <?= htmlspecialchars(trim($sk)) ?>
                                     </span>
                                 <?php endforeach; ?>
-                                <?php if (count($skills) > 6): ?>
-                                    <span class="skill-tag">+
-                                        <?= count($skills) - 6 ?> more
-                                    </span>
-                                <?php endif; ?>
                             </div>
+                        <?php else: ?>
+                            <div class="text-muted2 mb-3" style="font-size:.85rem;">No skills listed</div>
                         <?php endif; ?>
-                        <div class="mt-auto d-flex gap-2">
+
+                        <!-- Portfolio + Action -->
+                        <div class="mt-auto d-flex flex-column gap-2">
+                            <?php if ($f['portfolio_url']): ?>
+                                <a href="<?= htmlspecialchars($f['portfolio_url']) ?>" target="_blank"
+                                    class="btn btn-outline-primary btn-sm rounded-pill w-100">
+                                    🔗 View Portfolio
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill w-100" disabled>No Portfolio</button>
+                            <?php endif; ?>
                             <?php if ($isLoggedIn && $role === 'client'): ?>
                                 <a href="<?= BASE_URL ?>/client/invite_freelancer.php?freelancer_id=<?= (int) $f['user_id'] ?>"
                                     class="btn btn-brand btn-sm rounded-pill w-100">
@@ -342,6 +437,7 @@ require_once __DIR__ . '/includes/header.php';
                                 </a>
                             <?php endif; ?>
                         </div>
+
                     </div>
                 </div>
             <?php endforeach; ?>

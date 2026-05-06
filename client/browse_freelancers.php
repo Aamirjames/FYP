@@ -95,12 +95,22 @@ $stmt->execute($params);
 $freelancers = $stmt->fetchAll();
 
 // Helper function for online status
+// Compares both sides in UTC to avoid PHP/MySQL timezone mismatch.
+// MySQL stores last_active as UTC (SET time_zone='+00:00' in DB).
+// strtotime() interprets the datetime in PHP's local timezone, which can
+// make the gap appear negative (freelancer always "online"). We parse the
+// timestamp explicitly as UTC so both sides of the subtraction are UTC.
 function isOnline($lastActive)
 {
     if (!$lastActive)
         return false;
-    $last = strtotime($lastActive);
-    return (time() - $last) < 300;
+    // Parse the stored datetime as UTC regardless of PHP's local timezone
+    $dt = DateTime::createFromFormat('Y-m-d H:i:s', $lastActive, new DateTimeZone('UTC'));
+    if (!$dt)
+        return false;
+    $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
+    $diffSeconds = $nowUtc->getTimestamp() - $dt->getTimestamp();
+    return $diffSeconds >= 0 && $diffSeconds < 180; // online if active within last 3 mins
 }
 
 function initials($name)
@@ -134,7 +144,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="0">All Skills</option>
                     <?php foreach ($allSkills as $s): ?>
                         <option value="<?= (int) $s['skill_id'] ?>" <?= $skillId === (int) $s['skill_id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($s['skill_name']) ?>
+                            <?= htmlspecialchars($s['skill_name']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
