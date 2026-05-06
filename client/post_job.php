@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/csrf.php';
 requireRole('client');
 
 $clientId = (int) $_SESSION['user']['id'];
-$categories = $pdo->query("SELECT category_id, category_name FROM category ORDER BY category_name")->fetchAll();
+$categories = $pdo->query("SELECT category_id, category_name FROM category ORDER BY category_id")->fetchAll();
 
 $errors = [];
 $success = "";
@@ -93,9 +93,9 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
             </select>
         </div>
-
+        $result = mysqli_query($conn, $sql);
         <div class="mb-3">
-            <label class="form-label">Budget (PKR / USD)</label>
+            <label class="form-label">Budget (PKR)</label>
             <input class="form-control" name="budget" type="number" min="1" step="0.01" placeholder="e.g. 5000" required
                 value="<?= htmlspecialchars($_POST['budget'] ?? '') ?>">
         </div>

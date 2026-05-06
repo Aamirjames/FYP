@@ -33,6 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             else
                 $errors[] = "Account not active.";
         } else {
+            // Update last_active timestamp for this user
+            $updateStmt = $pdo->prepare("UPDATE users SET last_active = NOW() WHERE user_id = ?");
+            $updateStmt->execute([$user['user_id']]);
+
             session_regenerate_id(true);
             $_SESSION['user'] = [
                 'id' => (int) $user['user_id'],
